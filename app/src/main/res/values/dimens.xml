@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="edittext_margin">15dp</dimen>
+
+    <!--card -->
+    <dimen name="card_margin_out">25dp</dimen>
+    <dimen name="radius">5dp</dimen>
+    <dimen name="card_elevation">15dp</dimen>
+    <dimen name="small_text_size">10sp</dimen>
+    <dimen name="edit_text_margin">15dp</dimen>
+
+</resources>
