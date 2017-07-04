@@ -9,4 +9,7 @@
     <dimen name="small_text_size">10sp</dimen>
     <dimen name="edit_text_margin">15dp</dimen>
 
+    <!--message-->
+    <dimen name="circleradius">70dp</dimen>
+
 </resources>
