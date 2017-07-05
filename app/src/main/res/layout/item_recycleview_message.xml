@@ -5,8 +5,9 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:background="@drawable/ripple"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp">
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="8dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/message_circle_head"
