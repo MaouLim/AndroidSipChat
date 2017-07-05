@@ -14,4 +14,9 @@
     <string name="register_ensure">注册</string>
     <string name="register_to_login">登录</string>
 
+
+    <string name="drawer_string"> </string>
+
+    <!--菜单栏-->
+    <string name="menu_contract">联系人</string>
 </resources>
