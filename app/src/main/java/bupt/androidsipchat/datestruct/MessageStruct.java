@@ -2,6 +2,7 @@ package bupt.androidsipchat.datestruct;
 
 /**
  * Created by sheju on 2017/7/4.
+ *
  */
 
 public class MessageStruct {
@@ -9,6 +10,7 @@ public class MessageStruct {
     private String title;
     private String content;
     private int messageId;
+    private int viewType;
 
 
     public MessageStruct(int messageImage, String title, String content, int messageId) {
@@ -49,5 +51,13 @@ public class MessageStruct {
 
     public void setMessageId(int messageId) {
         this.messageId = messageId;
+    }
+
+    public int getViewType() {
+        return viewType;
+    }
+
+    public void setViewType(int viewType) {
+        this.viewType = viewType;
     }
 }

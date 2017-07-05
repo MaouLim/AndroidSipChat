@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/chart_circle_head_self"
+        android:layout_alignParentEnd="true"
+        android:layout_width="@dimen/circleradius"
+        android:layout_height="@dimen/circleradius"
+        android:src="@drawable/lamu" />
+
+    <TextView
+        android:id="@+id/chart_text_title_self"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/chart_circle_head_self"
+        android:layout_alignTop="@id/chart_circle_head_self"
+        android:lines="1"
+        android:textSize="15sp"
+        android:textColor="@color/gray"
+        android:paddingTop="8dp"
+        android:layout_marginEnd="18dp"
+        android:text="林华" />
+
+
+    <com.github.library.bubbleview.BubbleTextView
+
+        android:layout_marginTop="5dp"
+        android:id="@+id/chart_text_content_self"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/chart_circle_head_self"
+        android:text="快去写代码...................................................................."
+        android:layout_below="@id/chart_text_title_self"
+        android:padding="8dp"
+
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        app:arrowLocation="right"
+        app:arrowHeight="15dp"
+        app:angle="8dp"
+        app:bubbleColor="@color/lightblue" />
+
+
+</RelativeLayout>

@@ -1,5 +1,6 @@
 package bupt.androidsipchat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 import java.util.List;
 
+import bupt.androidsipchat.adapter.MessageRecycleViewAdapter;
 import bupt.androidsipchat.datestruct.MessageStruct;
 import bupt.androidsipchat.recycleviewdecoration.ItemDecoration;
 
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(int position) {
                 Log.i("Item", position + "");
+                startActivity(new Intent(MainActivity.this, ChartActivity.class));
             }
         });
 

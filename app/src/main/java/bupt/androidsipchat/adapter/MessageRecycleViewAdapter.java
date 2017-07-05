@@ -1,4 +1,4 @@
-package bupt.androidsipchat;
+package bupt.androidsipchat.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -11,11 +11,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import bupt.androidsipchat.R;
 import bupt.androidsipchat.datestruct.MessageStruct;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by sheju on 2017/7/4.
+ *
  */
 
 public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecycleViewAdapter.MessageViewHolder> {
@@ -82,7 +84,7 @@ public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecyc
         this.messages.addAll(messages);
     }
 
-    interface ItemClick {
+    public interface ItemClick {
         void onItemClick(int position);
     }
 
