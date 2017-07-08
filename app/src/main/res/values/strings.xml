@@ -19,4 +19,8 @@
 
     <!--菜单栏-->
     <string name="menu_contract">联系人</string>
+
+
+    <!-- Toolbar-->
+    <string name="search">Search</string>
 </resources>

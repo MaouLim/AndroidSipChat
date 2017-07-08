@@ -11,8 +11,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.widget.EditText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 2));
         messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 3));
         messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 4));
-
+        messages.add(new MessageStruct(R.drawable.lamu, "3508", "ZhuangZhuang：= =", 4));
 
     }
 
@@ -49,10 +53,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.acitivity_main);
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
         initDrawerView();
 
         initRecycleView();
 
+        initSearchEdit();
 
     }
 
@@ -95,6 +102,39 @@ public class MainActivity extends AppCompatActivity {
         mainMessagesView.setAdapter(mrlva);
 
         mainMessagesView.addItemDecoration(new ItemDecoration(this, ItemDecoration.HORIZONTAL_LIST));
+
+    }
+
+    private void initSearchEdit() {
+        EditText search = (EditText) findViewById(R.id.main_search);
+
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String fitter = s.toString();
+                mrlva.setMessages(messages);
+                if (fitter.equals("")) {
+                    mrlva.updateItems(messages);
+                } else {
+
+                    mrlva.notifyFitter(fitter);
+
+                }
+
+
+            }
+        });
+
 
     }
 
