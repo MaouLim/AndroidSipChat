@@ -23,6 +23,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecycleViewAdapter.MessageViewHolder> {
 
     private LayoutInflater inflater;
+
+    public void setMessages(List<MessageStruct> messages) {
+        this.messages.clear();
+        this.messages.addAll(messages);
+    }
+
     private List<MessageStruct> messages = new ArrayList<>();
 
     public MessageRecycleViewAdapter(Context context) {
@@ -95,14 +101,35 @@ public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecyc
     }
 
     public void newMessageCome(MessageStruct ms) {
-        for (MessageStruct m : messages) {
-            if (m.getMessageId() == ms.getMessageId()) {
-                messages.remove(m);
+        int i = 0;
+
+
+        for (; i < messages.size(); i++) {
+            if (messages.get(i).getMessageId() == ms.getMessageId()) {
+                messages.remove(i);
                 break;
             }
         }
         messages.add(0, ms);
         notifyDataSetChanged();
+    }
+
+    public void updateItems(List<MessageStruct> messages) {
+        this.messages.clear();
+        this.messages.addAll(messages);
+        notifyDataSetChanged();
+
+    }
+
+    public void notifyFitter(String s) {
+        List<MessageStruct> fitterMessages = new ArrayList<>();
+        for (int i = 0; i < messages.size(); i++) {
+            if (messages.get(i).getTitle().toLowerCase().contains(s) || messages.get(i).getContent().toLowerCase().contains(s)) {
+                fitterMessages.add(messages.get(i));
+            }
+        }
+
+        updateItems(fitterMessages);
     }
 
 
