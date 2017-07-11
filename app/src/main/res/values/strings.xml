@@ -19,6 +19,8 @@
 
     <!--菜单栏-->
     <string name="menu_contract">联系人</string>
+    <string name="menu_channel">频道</string>
+    <string name="menu_message">消息</string>
 
 
     <!-- Toolbar-->

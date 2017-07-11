@@ -10,6 +10,7 @@ import bupt.androidsipchat.datestruct.MessageStruct;
 
 /**
  * Created by sheju on 2017/7/8.
+ *
  */
 
 public class MessageService extends Service {

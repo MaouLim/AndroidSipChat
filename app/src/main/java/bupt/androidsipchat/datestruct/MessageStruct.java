@@ -11,6 +11,7 @@ public class MessageStruct {
     private String content;
     private int messageId;
     private int viewType;
+    private String subTitle;
 
 
     public MessageStruct(int messageImage, String title, String content, int messageId) {
@@ -59,5 +60,13 @@ public class MessageStruct {
 
     public void setViewType(int viewType) {
         this.viewType = viewType;
+    }
+
+    public String getSubTitle() {
+        return subTitle;
+    }
+
+    public void setSubTitle(String subTitle) {
+        this.subTitle = subTitle;
     }
 }

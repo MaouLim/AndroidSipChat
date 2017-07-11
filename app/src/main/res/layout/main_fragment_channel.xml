@@ -3,7 +3,13 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/main_content_layout">
+    android:id="@+id/fragment_channel"
 
+    >
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/main_recycleview_channel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </FrameLayout>

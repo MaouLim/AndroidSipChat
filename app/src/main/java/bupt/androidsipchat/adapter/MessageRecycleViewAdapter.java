@@ -124,7 +124,7 @@ public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecyc
     public void notifyFitter(String s) {
         List<MessageStruct> fitterMessages = new ArrayList<>();
         for (int i = 0; i < messages.size(); i++) {
-            if (messages.get(i).getTitle().toLowerCase().contains(s) || messages.get(i).getContent().toLowerCase().contains(s)) {
+            if (messages.get(i).getTitle().toLowerCase().contains(s.toLowerCase()) || messages.get(i).getContent().toLowerCase().contains(s.toLowerCase())) {
                 fitterMessages.add(messages.get(i));
             }
         }

@@ -1,29 +1,24 @@
 package bupt.androidsipchat;
 
-import android.content.Intent;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.EditText;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import bupt.androidsipchat.adapter.MessageRecycleViewAdapter;
-import bupt.androidsipchat.datestruct.MessageStruct;
-import bupt.androidsipchat.recycleviewdecoration.ItemDecoration;
+import bupt.androidsipchat.mainfragment.ChannelFragment;
+import bupt.androidsipchat.mainfragment.MessageFragment;
 
 /**
  * Created by sheju on 2017/7/4.
@@ -33,31 +28,20 @@ import bupt.androidsipchat.recycleviewdecoration.ItemDecoration;
 public class MainActivity extends AppCompatActivity {
 
 
-    private RecyclerView mainMessagesView;
-    private MessageRecycleViewAdapter mrlva;
-
-    private List<MessageStruct> messages = new ArrayList<>();
-
-    {
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 0));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 1));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 2));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 3));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 4));
-        messages.add(new MessageStruct(R.drawable.lamu, "3508", "ZhuangZhuang：= =", 4));
-
-    }
+    private FragmentManager fragmentManager;
+    private MessageFragment messageFragment;
+    private ChannelFragment channelFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.acitivity_main);
+        setContentView(R.layout.activity_main);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         initDrawerView();
 
-        initRecycleView();
+        initFragment();
 
         initSearchEdit();
 
@@ -68,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_icons8_menu);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.main_drawer);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.main_drawer);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.drawer_string, R.string.drawer_string);
         drawer.setDrawerListener(toggle);
@@ -78,34 +62,55 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                return false;
+                switch (item.getItemId()) {
+                    case R.id.drawer_channel: {
+                        if (!channelFragment.isVisible()) {
+                            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                            fragmentTransaction.replace(R.id.main_content_layout, channelFragment);
+                            fragmentTransaction.commit();
+                        }
+
+
+                        break;
+                    }
+                    case R.id.drawer_contract: {
+                        break;
+                    }
+                    case R.id.drawer_message: {
+                        if (!messageFragment.isVisible()) {
+                            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                            fragmentTransaction.replace(R.id.main_content_layout, messageFragment);
+                            fragmentTransaction.commit();
+                        }
+
+                        break;
+                    }
+
+                    default: {
+                        break;
+                    }
+                }
+
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
             }
         });
     }
 
-    private void initRecycleView() {
-        mainMessagesView = (RecyclerView) findViewById(R.id.main_recycleview_message);
-        mrlva = new MessageRecycleViewAdapter(this);
+    private void initFragment() {
+        messageFragment = new MessageFragment();
+        channelFragment = new ChannelFragment();
 
-        mrlva.initData(messages);
+        fragmentManager = getFragmentManager();
 
-        mrlva.setItemListener(new MessageRecycleViewAdapter.ItemClick() {
-            @Override
-            public void onItemClick(int position) {
-                Log.i("Item", position + "");
-                startActivity(new Intent(MainActivity.this, ChartActivity.class));
-            }
-        });
-
-        mainMessagesView.setLayoutManager(new LinearLayoutManager(this));
-
-        mainMessagesView.setAdapter(mrlva);
-
-        mainMessagesView.addItemDecoration(new ItemDecoration(this, ItemDecoration.HORIZONTAL_LIST));
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.add(R.id.main_content_layout, messageFragment);
+        fragmentTransaction.commit();
 
     }
 
     private void initSearchEdit() {
+
         EditText search = (EditText) findViewById(R.id.main_search);
 
         search.addTextChangedListener(new TextWatcher() {
@@ -122,12 +127,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 String fitter = s.toString();
-                mrlva.setMessages(messages);
-                if (fitter.equals("")) {
-                    mrlva.updateItems(messages);
-                } else {
 
-                    mrlva.notifyFitter(fitter);
+                channelFragment.setChannelList(channelFragment.getChannels());
+                messageFragment.setMessageList(messageFragment.getMessages());
+                if (fitter.equals("")) {
+                    channelFragment.updateChannelView(channelFragment.getChannels());
+                    messageFragment.updateMessageView(messageFragment.getMessages());
+                } else {
+                    channelFragment.notifyFitter(fitter);
+                    messageFragment.notifyFitter(fitter);
 
                 }
 
