@@ -15,7 +15,7 @@ import android.view.WindowManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import bupt.androidsipchat.ChartActivity;
+import bupt.androidsipchat.ChannelActivity;
 import bupt.androidsipchat.R;
 import bupt.androidsipchat.adapter.MessageRecycleViewAdapter;
 import bupt.androidsipchat.datestruct.MessageStruct;
@@ -23,6 +23,7 @@ import bupt.androidsipchat.recycleviewdecoration.ItemDecoration;
 
 /**
  * Created by sheju on 2017/7/11.
+ *
  */
 
 public class ChannelFragment extends Fragment {
@@ -74,7 +75,7 @@ public class ChannelFragment extends Fragment {
             @Override
             public void onItemClick(int position) {
                 Log.i("Item", position + "");
-                startActivity(new Intent(getActivity(), ChartActivity.class));
+                startActivity(new Intent(getActivity(), ChannelActivity.class));
             }
         });
 
