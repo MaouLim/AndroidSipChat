@@ -359,6 +359,45 @@ public class SipRequestBuilder {
         return request;
     }
 
+    public Request createAck(SipContactAOR targetContactAOR) throws Exception {
+        SipContactAOR selfContactAOR = sipUserAgent.getContactAOR();
+
+        FromHeader fromHeader = headerFactory.createFromHeader(
+                selfContactAOR.getSipAOR().getSipAddress(),
+                selfContactAOR.getUserName()
+        );
+        ToHeader toHeader =
+                headerFactory.createToHeader(targetContactAOR.getSipAOR().getSipAddress(), null);
+
+        SipURI requestURI = targetContactAOR.getSipURI();
+        requestURI.setTransportParam(sipUserAgent.getTransport());
+        ContactHeader contactHeader =
+                headerFactory.createContactHeader(selfContactAOR.getSipAddress());
+
+        List<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();
+        ViaHeader viaHeader = headerFactory.createViaHeader(
+                sipUserAgent.getAddress(),
+                sipUserAgent.getPort(),
+                sipUserAgent.getTransport(),
+                null
+        );
+        viaHeaders.add(viaHeader);
+
+        CallIdHeader callIdHeader = sipUserAgent.getSipProvider().getNewCallId();
+        MaxForwardsHeader maxForwardsHeader = headerFactory.createMaxForwardsHeader(70);
+        CSeqHeader cSeqHeader =
+                headerFactory.createCSeqHeader(sequence.getAndIncrement(), Request.ACK);
+
+        final Request request = sipFactoryHelper.getMessageFactory().createRequest(
+                requestURI, Request.ACK, callIdHeader, cSeqHeader,
+                fromHeader, toHeader, viaHeaders, maxForwardsHeader
+        );
+
+        request.addHeader(contactHeader);
+
+        return request;
+    }
+
     public static long getRequestCSeq(Request request) {
         CSeqHeader cSeqHeader = (CSeqHeader) request.getHeader(CSeqHeader.NAME);
 
