@@ -14,18 +14,18 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import bupt.androidsipchat.adapter.ChartRecycleViewAdapter;
+import bupt.androidsipchat.adapter.ChatRecycleViewAdapter;
 import bupt.androidsipchat.datestruct.MessageStruct;
 
 /**
  * Created by sheju on 2017/7/5.
  */
 
-public class ChartActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity {
 
 
     private RecyclerView chartsView;
-    private ChartRecycleViewAdapter crlva;
+    private ChatRecycleViewAdapter crlva;
 
 
     private MessageStruct currentMessage;
@@ -41,7 +41,7 @@ public class ChartActivity extends AppCompatActivity {
         messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 4));
 
         for (MessageStruct ms : messages) {
-            ms.setViewType(ChartRecycleViewAdapter.OTHERTYPE);
+            ms.setViewType(ChatRecycleViewAdapter.OTHERTYPE);
         }
 
     }
@@ -61,7 +61,7 @@ public class ChartActivity extends AppCompatActivity {
 
     private void initRecycleView() {
         chartsView = (RecyclerView) findViewById(R.id.chart_recycler_view);
-        crlva = new ChartRecycleViewAdapter(this);
+        crlva = new ChatRecycleViewAdapter(this);
 
         crlva.initData(messages);
 
@@ -89,7 +89,7 @@ public class ChartActivity extends AppCompatActivity {
                 String text = tiet.getText().toString();
                 currentMessageId += 1;
                 currentMessage = new MessageStruct(R.drawable.lamu, "壮壮", text, currentMessageId);
-                currentMessage.setViewType(ChartRecycleViewAdapter.SELFTYPE);
+                currentMessage.setViewType(ChatRecycleViewAdapter.SELFTYPE);
                 tiet.setText("");
                 crlva.newMessageCome(currentMessage);
             }

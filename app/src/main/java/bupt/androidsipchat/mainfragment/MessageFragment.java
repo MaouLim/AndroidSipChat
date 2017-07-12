@@ -15,7 +15,7 @@ import android.view.WindowManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import bupt.androidsipchat.ChartActivity;
+import bupt.androidsipchat.ChatActivity;
 import bupt.androidsipchat.R;
 import bupt.androidsipchat.adapter.MessageRecycleViewAdapter;
 import bupt.androidsipchat.datestruct.MessageStruct;
@@ -77,7 +77,7 @@ public class MessageFragment extends Fragment {
             @Override
             public void onItemClick(int position) {
                 Log.i("Item", position + "");
-                startActivity(new Intent(getActivity(), ChartActivity.class));
+                startActivity(new Intent(getActivity(), ChatActivity.class));
             }
         });
 

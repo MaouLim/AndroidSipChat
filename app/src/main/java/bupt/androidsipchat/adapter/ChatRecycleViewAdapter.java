@@ -20,12 +20,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by sheju on 2017/7/5.
  */
 
-public class ChartRecycleViewAdapter extends RecyclerView.Adapter<ChartRecycleViewAdapter.ChartViewHolder> {
+public class ChatRecycleViewAdapter extends RecyclerView.Adapter<ChatRecycleViewAdapter.ChartViewHolder> {
 
     private LayoutInflater inflater;
     private List<MessageStruct> messages = new ArrayList<>();
 
-    public ChartRecycleViewAdapter(Context context) {
+    public ChatRecycleViewAdapter(Context context) {
         inflater = LayoutInflater.from(context);
     }
 
@@ -35,7 +35,7 @@ public class ChartRecycleViewAdapter extends RecyclerView.Adapter<ChartRecycleVi
 
 
     @Override
-    public ChartRecycleViewAdapter.ChartViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ChatRecycleViewAdapter.ChartViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         if (viewType == SELFTYPE) {
             return new ChartViewHolder(inflater.inflate(R.layout.item_recycleview_chart_myself, parent, false), viewType);
@@ -47,7 +47,7 @@ public class ChartRecycleViewAdapter extends RecyclerView.Adapter<ChartRecycleVi
     }
 
     @Override
-    public void onBindViewHolder(ChartRecycleViewAdapter.ChartViewHolder holder, int position) {
+    public void onBindViewHolder(ChatRecycleViewAdapter.ChartViewHolder holder, int position) {
         holder.civ.setImageResource(messages.get(position).getMessageImage());
         holder.title.setText(messages.get(position).getTitle());
         holder.bubbleTextView.setText(messages.get(position).getContent());

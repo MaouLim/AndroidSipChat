@@ -9,6 +9,7 @@ import android.javax.sip.ResponseEvent;
 import android.javax.sip.ServerTransaction;
 import android.javax.sip.TimeoutEvent;
 import android.javax.sip.TransactionTerminatedEvent;
+import android.javax.sip.header.FromHeader;
 import android.javax.sip.message.Request;
 import android.javax.sip.message.Response;
 import android.util.Log;
@@ -42,12 +43,34 @@ public class ClientController implements SipProcessor, ChatClientService {
         void onRegisteResponseGet(boolean status);
 
         void onMessageResponseGet(boolean status);
+
+        void onPublishResponseGet(boolean status);
+
+        void onSubscribeResponseGet(boolean status);
+
+
     }
 
     private ResponseGet responseListener;
 
     public void setResponseListener(ResponseGet responseListener) {
         this.responseListener = responseListener;
+    }
+
+
+    public interface RequestGet {
+        void onMessageRequestGet(String from, String messages);
+
+        void onNotifyRequestGet(String from, String title, String content);
+
+        void onByeRequestGet(String from);
+
+    }
+
+    private RequestGet requestListener;
+
+    public void setRequestListener(ResponseGet requestListener) {
+        this.responseListener = requestListener;
     }
 
 
@@ -78,7 +101,7 @@ public class ClientController implements SipProcessor, ChatClientService {
                 @Override
                 public void processResponse(ResponseEvent responseEvent) {
                     int statusCode = responseEvent.getResponse().getStatusCode();
-
+                    ClientController.this.processResponse(responseEvent);
                     if (200 <= statusCode && statusCode < 300) {
                         // todo handle successful case
                     } else {
@@ -118,18 +141,50 @@ public class ClientController implements SipProcessor, ChatClientService {
     @Override
     public void processInvite(RequestEvent requestEvent) {
 
+        ServerTransaction transaction = requestEvent.getServerTransaction();
+        try {
+            transaction.sendResponse(responseBuilder.create(transaction.getRequest(), Response.OK));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
     public void processBye(RequestEvent requestEvent) {
+        ServerTransaction transaction = requestEvent.getServerTransaction();
+        try {
+            transaction.sendResponse(responseBuilder.create(transaction.getRequest(), Response.OK));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        Request request = requestEvent.getRequest();
+
+        FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
+
+        String name = fromHeader.getName();
+
+        requestListener.onByeRequestGet(name);
+
     }
 
     @Override
     public void processMessage(RequestEvent requestEvent) {
         ServerTransaction transaction = requestEvent.getServerTransaction();
         try {
-            // todo something like updating ui components
             transaction.sendResponse(responseBuilder.create(transaction.getRequest(), Response.OK));
+
+
+            Request request = requestEvent.getRequest();
+
+            FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
+
+            String name = fromHeader.getName();
+
+            String content = (String) request.getContent();
+
+            requestListener.onMessageRequestGet(name, content);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -149,8 +204,17 @@ public class ClientController implements SipProcessor, ChatClientService {
     public void processNotifier(RequestEvent requestEvent) {
         ServerTransaction transaction = requestEvent.getServerTransaction();
         try {
-            // todo something like updating ui components
             transaction.sendResponse(responseBuilder.create(transaction.getRequest(), Response.OK));
+
+            Request request = requestEvent.getRequest();
+            FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
+            String from = fromHeader.getName();
+            String content = (String) request.getContent();
+
+            String[] messages = content.split("/");
+            content = content.substring(messages[0].length() + 1);
+            requestListener.onNotifyRequestGet(from, messages[0], content);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -183,16 +247,34 @@ public class ClientController implements SipProcessor, ChatClientService {
             }
             case Request.MESSAGE: {
                 boolean status = false;
-                if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                if (response.getStatusCode() == 100) {
                     status = true;
                 }
                 responseListener.onMessageResponseGet(status);
-
+                break;
             }
+            case Request.PUBLISH: {
+                boolean status = false;
+                if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                    status = true;
+                }
+
+                break;
+            }
+            case Request.SUBSCRIBE: {
+                boolean status = false;
+                if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                    status = true;
+                }
+                responseListener.onSubscribeResponseGet(status);
+                break;
+            }
+            default: {
+                break;
+            }
+
         }
 
-
-        // todo
     }
 
     @Override
