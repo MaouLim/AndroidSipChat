@@ -161,6 +161,11 @@ public class ClientController implements SipProcessor, ChatClientService {
     }
 
     @Override
+    public void processACK(RequestEvent requestEvent) {
+        // todo
+    }
+
+    @Override
     public void processResponse(ResponseEvent responseEvent) {
         ClientTransaction clientTransaction = responseEvent.getClientTransaction();
         Response response = responseEvent.getResponse();
