@@ -2,6 +2,7 @@ package bupt.androidsipchat;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import android.widget.EditText;
 
 import bupt.androidsipchat.mainfragment.ChannelFragment;
 import bupt.androidsipchat.mainfragment.MessageFragment;
+import bupt.androidsipchat.service.MessageService;
 
 /**
  * Created by sheju on 2017/7/4.
@@ -33,6 +35,12 @@ public class MainActivity extends AppCompatActivity {
     private ChannelFragment channelFragment;
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -44,6 +52,16 @@ public class MainActivity extends AppCompatActivity {
         initFragment();
 
         initSearchEdit();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(MainActivity.this, MessageService.class));
+
+
+
 
     }
 
@@ -74,6 +92,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case R.id.drawer_contract: {
+                        Intent intent = new Intent(MainActivity.this, ContactAcitivity.class);
+                        startActivity(intent);
+
                         break;
                     }
                     case R.id.drawer_message: {

@@ -2,22 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/fragment_channel"
-
-    >
+    android:layout_height="match_parent">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/main_recycleview_channel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:id="@+id/contacts">
+
+
+    </android.support.v7.widget.RecyclerView>
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/sub_add"
-        android:id="@+id/add_sub_new_channel" />
+        android:text="添加"
+        android:id="@+id/contact_add" />
 
 
 </LinearLayout>

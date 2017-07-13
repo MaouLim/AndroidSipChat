@@ -12,7 +12,7 @@ public class IPAddressHelper {
 
 	public static String getIPAddress(Context context) {
 		WifiManager wifiManager =
-				(WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+				(WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
 		// todo add permission to manifest
 

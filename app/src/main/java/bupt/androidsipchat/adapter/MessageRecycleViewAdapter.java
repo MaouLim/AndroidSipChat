@@ -44,9 +44,12 @@ public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecyc
 
     @Override
     public void onBindViewHolder(final MessageViewHolder holder, int position) {
-
-        holder.civ.setImageResource(messages.get(position).getMessageImage());
         holder.title.setText(messages.get(position).getTitle());
+        //holder.civ.setImageResource(messages.get(position).getMessageImage());
+        if (messages.get(position).isChatRoomMessage) {
+            holder.title.setText("server");
+        }
+
         holder.lastContent.setText(messages.get(position).getContent());
 
         holder.parentView.setOnClickListener(new View.OnClickListener() {
@@ -103,9 +106,8 @@ public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecyc
     public void newMessageCome(MessageStruct ms) {
         int i = 0;
 
-
         for (; i < messages.size(); i++) {
-            if (messages.get(i).getMessageId() == ms.getMessageId()) {
+            if (messages.get(i).getSpecialId() == ms.getSpecialId()) {
                 messages.remove(i);
                 break;
             }

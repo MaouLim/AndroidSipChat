@@ -25,4 +25,5 @@
 
     <!-- Toolbar-->
     <string name="search">Search</string>
+    <string name="sub_add">订阅/添加 新频道</string>
 </resources>
