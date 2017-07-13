@@ -48,7 +48,7 @@ public class ChatRecycleViewAdapter extends RecyclerView.Adapter<ChatRecycleView
 
     @Override
     public void onBindViewHolder(ChatRecycleViewAdapter.ChartViewHolder holder, int position) {
-        holder.civ.setImageResource(messages.get(position).getMessageImage());
+        //holder.civ.setImageResource(messages.get(position).getMessageImage());
         holder.title.setText(messages.get(position).getTitle());
         holder.bubbleTextView.setText(messages.get(position).getContent());
     }

@@ -16,6 +16,7 @@ import android.util.Log;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import bupt.androidsipchat.sip.networks.sip.SipAOR;
 import bupt.androidsipchat.sip.networks.sip.SipContactAOR;
 import bupt.androidsipchat.sip.networks.sip.SipProcessor;
 import bupt.androidsipchat.sip.networks.sip.SipRequestBuilder;
@@ -35,6 +36,8 @@ public class ClientController implements SipProcessor, ChatClientService {
     private SipRequestBuilder requestBuilder = null;
     private SipResponseBuilder responseBuilder = null;
     private SipContactAOR serverAOR = null;
+
+    public String domain = "dd.dev.com";
 
     private ConcurrentHashMap<Long, ClientTransaction> clientTransactionMap = null;
     private ConcurrentHashMap<Long, ServerTransaction> serverTransactionMap = null;
@@ -69,8 +72,8 @@ public class ClientController implements SipProcessor, ChatClientService {
 
     private RequestGet requestListener;
 
-    public void setRequestListener(ResponseGet requestListener) {
-        this.responseListener = requestListener;
+    public void setRequestListener(RequestGet requestListener) {
+        this.requestListener = requestListener;
     }
 
 
@@ -132,6 +135,9 @@ public class ClientController implements SipProcessor, ChatClientService {
 
             this.responseBuilder = userAgent.createResponseBuilder();
             this.requestBuilder = userAgent.createRequestBuilder();
+            this.clientTransactionMap = new ConcurrentHashMap<>();
+            this.serverTransactionMap = new ConcurrentHashMap<>();
+
             this.serverAOR = serverAOR;
         } catch (Exception ex) {
             throw new InitFailureException("failed to init sipUserAgent", ex);
@@ -171,17 +177,29 @@ public class ClientController implements SipProcessor, ChatClientService {
     @Override
     public void processMessage(RequestEvent requestEvent) {
         ServerTransaction transaction = requestEvent.getServerTransaction();
+        if (transaction == null) {
+            try {
+                transaction = userAgent.getSipProvider().getNewServerTransaction(requestEvent.getRequest());
+            } catch (Exception e) {
+                Log.e("Transaction", " ", e);
+            }
+        }
+        Log.e("ProcessMessage", "GetMessageEvent");
         try {
             transaction.sendResponse(responseBuilder.create(transaction.getRequest(), Response.OK));
+
 
 
             Request request = requestEvent.getRequest();
 
             FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
 
-            String name = fromHeader.getName();
+            SipAOR temp = new SipAOR(fromHeader.getAddress().toString());
+            String name = temp.getUserName();
 
-            String content = (String) request.getContent();
+
+            String content = new String(request.getRawContent());
+            Log.e("ProcessMessage", name + ":" + content);
 
             requestListener.onMessageRequestGet(name, content);
 
@@ -304,6 +322,7 @@ public class ClientController implements SipProcessor, ChatClientService {
     public void login(String userName, String password) {
 
         try {
+            serverAOR.attachTo(new SipAOR(userName, domain));
             Request request = requestBuilder.createRegister(serverAOR, 3600);
             ClientTransaction transaction = userAgent.sendRequestByTransaction(request);
 
@@ -327,9 +346,11 @@ public class ClientController implements SipProcessor, ChatClientService {
     }
 
     @Override
-    public void sendMessage(String contactURI, String content) {
+    public void sendMessage(String sipURI, String content) {
         try {
-            Request request = requestBuilder.createMessage(new SipContactAOR(contactURI), content);
+            Log.e("Controller", sipURI);
+            serverAOR.attachTo(new SipAOR(sipURI));
+            Request request = requestBuilder.createMessage(serverAOR, content);
             ClientTransaction transaction = userAgent.sendRequestByTransaction(request);
             clientTransactionMap.put(SipRequestBuilder.getRequestCSeq(request), transaction);
         } catch (Exception ex) {
@@ -355,7 +376,9 @@ public class ClientController implements SipProcessor, ChatClientService {
 
     @Override
     public void publishToChannel(String channelId, String statusInfo) {
+        serverAOR.attachTo(new SipAOR("server", domain));
         try {
+
             Request request = requestBuilder.createPublish(serverAOR, channelId, statusInfo);
             ClientTransaction transaction = userAgent.sendRequestByTransaction(request);
             clientTransactionMap.put(SipRequestBuilder.getRequestCSeq(request), transaction);

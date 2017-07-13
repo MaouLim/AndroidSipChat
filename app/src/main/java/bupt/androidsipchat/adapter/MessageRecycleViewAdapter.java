@@ -45,7 +45,7 @@ public class MessageRecycleViewAdapter extends RecyclerView.Adapter<MessageRecyc
     @Override
     public void onBindViewHolder(final MessageViewHolder holder, int position) {
 
-        holder.civ.setImageResource(messages.get(position).getMessageImage());
+        //holder.civ.setImageResource(messages.get(position).getMessageImage());
         holder.title.setText(messages.get(position).getTitle());
         holder.lastContent.setText(messages.get(position).getContent());
 

@@ -2,6 +2,7 @@ package bupt.androidsipchat;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -74,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     case R.id.drawer_contract: {
+                        Intent intent = new Intent(MainActivity.this, ContactAcitivity.class);
+                        startActivity(intent);
+
                         break;
                     }
                     case R.id.drawer_message: {

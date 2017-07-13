@@ -10,6 +10,7 @@ import android.javax.sip.SipException;
 import android.javax.sip.TransportNotSupportedException;
 import android.javax.sip.message.Request;
 import android.javax.sip.message.Response;
+import android.util.Log;
 
 import java.util.TooManyListenersException;
 
@@ -31,6 +32,8 @@ public abstract class SipUserAgent extends SipAgent {
             ObjectInUseException,
             TooManyListenersException {
         super(sipConfig, contactAOR.getPort(), transport);
+
+        Log.e("SipUserAgent", super.getAddress() + "," + contactAOR.getAddress());
 
         if (!super.getAddress().equals(contactAOR.getAddress())) {
             throw new InvalidArgumentException("the contactAOR doesn't match to this sipAgent");

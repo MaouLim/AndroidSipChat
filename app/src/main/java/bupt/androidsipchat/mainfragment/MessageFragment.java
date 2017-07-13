@@ -1,8 +1,12 @@
 package bupt.androidsipchat.mainfragment;
 
 import android.app.Fragment;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +24,7 @@ import bupt.androidsipchat.R;
 import bupt.androidsipchat.adapter.MessageRecycleViewAdapter;
 import bupt.androidsipchat.datestruct.MessageStruct;
 import bupt.androidsipchat.recycleviewdecoration.ItemDecoration;
+import bupt.androidsipchat.service.MessageService;
 
 /**
  * Created by sheju on 2017/7/11.
@@ -29,17 +34,43 @@ public class MessageFragment extends Fragment {
     private RecyclerView mainMessagesView;
     private MessageRecycleViewAdapter mrlva;
 
+    MessageService messageService;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MessageService.DataBinder dataBinder = (MessageService.DataBinder) service;
+            messageService = dataBinder.getService();
+
+            messages.clear();
+            messages.addAll(messageService.getDialogs());
+
+            messageService.setMessageNotify(new MessageService.MessageNotify() {
+                @Override
+                public void onNewMessageArrive(final MessageStruct message) {
+                    newMessageCome(message);
+                    if (mrlva != null) {
+                        mainMessagesView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mrlva.newMessageCome(message);
+                            }
+                        });
+
+                    }
+                }
+            });
+
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
     private List<MessageStruct> messages = new ArrayList<>();
-
-    {
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 0));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 1));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 2));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 3));
-        messages.add(new MessageStruct(R.drawable.lamu, "叁伍零捌", "林华：还有代码没写完，赶紧过来继续写！！！", 4));
-        messages.add(new MessageStruct(R.drawable.lamu, "3508", "ZhuangZhuang：= =", 4));
-
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,6 +94,8 @@ public class MessageFragment extends Fragment {
 
         initRecycleView(view);
 
+        getActivity().bindService(new Intent(getActivity(), MessageService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+
 
     }
 
@@ -77,7 +110,12 @@ public class MessageFragment extends Fragment {
             @Override
             public void onItemClick(int position) {
                 Log.i("Item", position + "");
-                startActivity(new Intent(getActivity(), ChatActivity.class));
+                Intent intent = new Intent(getActivity(), ChatActivity.class);
+                intent.putExtra("sequenceId", messages.get(position).getMessageId());
+                intent.putExtra("from", messages.get(position).getTitle());
+                intent.putExtra("dialogId", messages.get(position).getSpecialId());
+
+                startActivity(intent);
             }
         });
 
@@ -104,6 +142,17 @@ public class MessageFragment extends Fragment {
 
     public List<MessageStruct> getMessages() {
         return messages;
+    }
+
+    public void newMessageCome(MessageStruct ms) {
+        int i = 0;
+        for (; i < messages.size(); i++) {
+            if (messages.get(i).getMessageId() == ms.getMessageId()) {
+                messages.remove(i);
+                break;
+            }
+        }
+        messages.add(0, ms);
     }
 
 }

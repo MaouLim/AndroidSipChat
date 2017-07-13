@@ -39,6 +39,7 @@ public abstract class SipAgent implements SipListener {
         this.transport = transport;
 
         this.sipStack = SipFactoryHelper.getInstance().createSipStack(sipConfig);
+
         ListeningPoint point =
                 sipStack.createListeningPoint(this.sipStack.getIPAddress(), port, this.transport);
 

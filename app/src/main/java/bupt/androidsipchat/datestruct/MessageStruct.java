@@ -1,5 +1,7 @@
 package bupt.androidsipchat.datestruct;
 
+import bupt.androidsipchat.R;
+
 /**
  * Created by sheju on 2017/7/4.
  *
@@ -13,12 +15,28 @@ public class MessageStruct {
     private int viewType;
     private String subTitle;
 
+    private int specialId;
+
 
     public MessageStruct(int messageImage, String title, String content, int messageId) {
-        this.messageImage = messageImage;
+        this.messageImage = R.drawable.lamu;
         this.title = title;
         this.content = content;
         this.messageId = messageId;
+    }
+
+    public MessageStruct(String title, String content, int messageId) {
+        this.title = title;
+        this.content = content;
+        this.messageId = messageId;
+    }
+
+    public MessageStruct(MessageStruct m) {
+        this.title = m.getTitle();
+        this.content = m.getContent();
+        this.messageId = m.getMessageId();
+        this.subTitle = m.getSubTitle();
+        this.viewType = m.getViewType();
     }
 
 
@@ -68,5 +86,13 @@ public class MessageStruct {
 
     public void setSubTitle(String subTitle) {
         this.subTitle = subTitle;
+    }
+
+    public int getSpecialId() {
+        return specialId;
+    }
+
+    public void setSpecialId(int specialId) {
+        this.specialId = specialId;
     }
 }
