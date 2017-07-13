@@ -61,10 +61,16 @@ public class LoginActivity extends AppCompatActivity {
                     .commit();
         }
 
-        startService(new Intent(LoginActivity.this, MessageService.class));
         bindService(new Intent(LoginActivity.this, MessageService.class), serviceConnection, BIND_AUTO_CREATE);
 
 
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(serviceConnection);
 
     }
 
@@ -76,9 +82,12 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onLogin(String user, String password) {
                 if (!isLogin) {
+                    messageService.closeController();
 
                     messageService.initSipController(user, password);
-                    messageService.login(new UserInformation(user));
+                    UserInformation usera = new UserInformation(user);
+                    usera.password = password;
+                    messageService.login(usera);
                     isLogin = true;
                 } else {
                     Toast.makeText(LoginActivity.this, "正在尝试登录中，请稍后", Toast.LENGTH_SHORT).show();
@@ -89,8 +98,12 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onRegister(String user, String password) {
                 if (!isLogin) {
+                    messageService.closeController();
                     messageService.initSipController(user, password);
-                    messageService.login(new UserInformation(user));
+                    messageService.initSipController(user, password);
+                    UserInformation usera = new UserInformation(user);
+                    usera.password = password;
+                    messageService.login(usera);
                     isLogin = true;
                 } else {
                     Toast.makeText(LoginActivity.this, "正在尝试登录中，请稍后", Toast.LENGTH_SHORT).show();
@@ -106,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (status) {
                     isLogin = false;
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    finish();
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -113,6 +127,7 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(LoginActivity.this, "用户名密码错误", Toast.LENGTH_SHORT).show();
                         }
                     });
+                    messageService.closeController();
                 }
             }
         });

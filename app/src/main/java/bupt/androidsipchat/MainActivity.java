@@ -20,6 +20,7 @@ import android.widget.EditText;
 
 import bupt.androidsipchat.mainfragment.ChannelFragment;
 import bupt.androidsipchat.mainfragment.MessageFragment;
+import bupt.androidsipchat.service.MessageService;
 
 /**
  * Created by sheju on 2017/7/4.
@@ -34,6 +35,12 @@ public class MainActivity extends AppCompatActivity {
     private ChannelFragment channelFragment;
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -45,6 +52,16 @@ public class MainActivity extends AppCompatActivity {
         initFragment();
 
         initSearchEdit();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(MainActivity.this, MessageService.class));
+
+
+
 
     }
 

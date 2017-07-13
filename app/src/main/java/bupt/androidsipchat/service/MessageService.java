@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bupt.androidsipchat.adapter.ChatRecycleViewAdapter;
+import bupt.androidsipchat.datestruct.Channel;
 import bupt.androidsipchat.datestruct.DialogMessage;
 import bupt.androidsipchat.datestruct.MessageStruct;
 import bupt.androidsipchat.datestruct.UserInformation;
@@ -31,6 +32,10 @@ public class MessageService extends Service {
 
     public List<DialogMessage> dialogMessageList = new ArrayList<>();
 
+    public List<Channel> channelMessageList = new ArrayList<>();
+
+    private String chartRoomName = "大型同性交友聊天室";
+
     DataBinder dataBinder = new DataBinder();
 
     ClientController clientController;
@@ -50,12 +55,24 @@ public class MessageService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        LogOut();
+
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return dataBinder;
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        Log.e("OnTaskRemoved", "LogOut");
+
+        LogOut();
+
     }
 
     public class DataBinder extends Binder {
@@ -80,44 +97,112 @@ public class MessageService extends Service {
 
         clientController.setRequestListener(new ClientController.RequestGet() {
             @Override
-            public void onMessageRequestGet(String from, String messages) {
-                MessageStruct messageStruct = new MessageStruct(from, messages, id);
+            public void onMessageRequestGet(String from, String messages, String to) {
 
-                if (messageNotify != null) {
-                    messageNotify.onNewMessageArrive(messageStruct);
-                }
-                if (chatNotify != null) {
-                    chatNotify.onNewMessageArrive(messageStruct);
-                }
 
-                int i = 0;
-                for (; i < dialogMessageList.size(); i++) {
-                    if (dialogMessageList.get(i).toName.equals(from)) {
-                        break;
+                if (to.equals("server")) {
+                    //to = chartRoomName;
+
+                    MessageStruct messageStruct = new MessageStruct(from, messages, id);
+                    messageStruct.isChatRoomMessage = true;
+
+                    boolean isFind = false;
+
+                    int i = 0;
+                    for (; i < dialogMessageList.size(); i++) {
+                        if (dialogMessageList.get(i).toName.equals(to)) {
+                            break;
+                        }
                     }
-                }
-                if (i < dialogMessageList.size()) {
-                    DialogMessage dialogMessage = dialogMessageList.get(i);
-                    dialogMessage.messageStructs.add(new MessageStruct(from, messages, id));
-                    dialogMessage.idSequence = id;
+                    if (i < dialogMessageList.size()) {
+                        isFind = true;
+                        Log.e("Message", "Find the dialog");
+                        DialogMessage dialogMessage = dialogMessageList.get(i);
+
+                        messageStruct.setSpecialId(dialogMessage.id);
+                        dialogMessage.messageStructs.add(messageStruct);
+                        dialogMessage.idSequence = id;
+
+                    } else {
+                        Log.e("Message", "Create the dialog");
+                        DialogMessage dialogMessage = new DialogMessage(userName, from);
+                        dialogMessage.isChatRoom = true;
+                        messageStruct.setSpecialId(dialogMessage.id);
+                        dialogMessage.messageStructs.add(messageStruct);
+                        dialogMessage.idSequence = id;
+                        dialogMessageList.add(dialogMessage);
+                    }
+
+                    if (messageNotify != null) {
+                        messageNotify.onNewMessageArrive(messageStruct, isFind);
+                    }
+                    if (chatNotify != null) {
+                        chatNotify.onNewMessageArrive(messageStruct, isFind);
+                    }
+
+                    id++;
+
 
                 } else {
-                    DialogMessage dialogMessage = new DialogMessage(userName, from);
-                    dialogMessage.messageStructs.add(new MessageStruct(from, messages, id));
-                    dialogMessage.idSequence = id;
-                    dialogMessageList.add(dialogMessage);
+
+                    MessageStruct messageStruct = new MessageStruct(from, messages, id);
+
+                    boolean isFind = false;
+
+
+                    int i = 0;
+                    for (; i < dialogMessageList.size(); i++) {
+                        if (dialogMessageList.get(i).toName.equals(from)) {
+                            break;
+                        }
+                    }
+                    if (i < dialogMessageList.size()) {
+                        isFind = true;
+                        Log.e("Message", "Find the dialog");
+                        DialogMessage dialogMessage = dialogMessageList.get(i);
+                        messageStruct.setSpecialId(dialogMessage.id);
+                        dialogMessage.messageStructs.add(messageStruct);
+                        dialogMessage.idSequence = id;
+
+                    } else {
+                        Log.e("Message", "Create the dialog");
+                        DialogMessage dialogMessage = new DialogMessage(userName, from);
+                        messageStruct.setSpecialId(dialogMessage.id);
+                        dialogMessage.messageStructs.add(messageStruct);
+                        dialogMessage.idSequence = id;
+                        dialogMessageList.add(dialogMessage);
+                    }
+
+                    if (messageNotify != null) {
+                        messageNotify.onNewMessageArrive(messageStruct, isFind);
+                    }
+                    if (chatNotify != null) {
+                        chatNotify.onNewMessageArrive(messageStruct, isFind);
+                    }
+
+                    id++;
                 }
-
-
-                id++;
             }
 
             @Override
-            public void onNotifyRequestGet(String from, String title, String content) {
+            public void onNotifyRequestGet(String from, String title, String content, String channelName) {
                 MessageStruct messageStruct = new MessageStruct(title, content, id);
                 id++;
                 messageStruct.setSubTitle(from);
-                channelNotify.onChannelMessageArrive(messageStruct);
+                int specialId = -1;
+                for (Channel c : channelMessageList) {
+                    if (c.getTitle().equals(channelName)) {
+                        specialId = c.getId();
+                        break;
+                    }
+                }
+
+                messageStruct.setSpecialId(specialId);
+
+                if (channelMessageNotify != null) {
+                    channelMessageNotify.onChannelMessageArrive(messageStruct);
+                }
+                //channelNotify.onChannelListArrive(messageStruct);
             }
 
             @Override
@@ -138,36 +223,41 @@ public class MessageService extends Service {
 
             @Override
             public void onPublishResponseGet(boolean status) {
-                channelResult.onPublishResponse(status);
+                channelPubResult.onPublishResponse(status);
             }
 
             @Override
             public void onSubscribeResponseGet(boolean status) {
-                channelResult.onSubscribeResponse(status);
+                channelSubResult.onSubscribeResponse(status);
             }
         });
 
     }
 
-    public void login(UserInformation user) {
+    public void login(final UserInformation user) {
 
         final String add = user.getUserName();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 Log.e("Service", "Login");
-                clientController.login(add, " ");
+                clientController.login(add, user.password);
             }
         }).start();
     }
 
     public void sendMessage(String to, String content, int dialogId) {
+        String trueTo = to;
+        if (to.equals(chartRoomName)) {
+            to = "server";
+        }
+
         final String sipAdd = "sip:" + to + "@" + clientController.domain;
         final String m = content;
 
         for (DialogMessage dm : dialogMessageList) {
             if (dm.id == dialogId) {
-                dm.messageStructs.add(new MessageStruct(to, content, id));
+                dm.messageStructs.add(new MessageStruct(trueTo, content, id));
                 break;
             }
         }
@@ -210,14 +300,14 @@ public class MessageService extends Service {
 
     public interface MessageNotify {
 
-        void onNewMessageArrive(MessageStruct message);
+        void onNewMessageArrive(MessageStruct message, boolean isFind);
 
     }
 
     MessageNotify messageNotify;
 
     public interface ChatNotify {
-        void onNewMessageArrive(MessageStruct message);
+        void onNewMessageArrive(MessageStruct message, boolean isFind);
     }
 
     public void setChatNotify(ChatNotify chatNotify) {
@@ -232,13 +322,23 @@ public class MessageService extends Service {
 
 
     public interface ChannelNotify {
-        void onChannelMessageArrive(MessageStruct message);
+        void onChannelListArrive(MessageStruct message);
     }
 
     ChannelNotify channelNotify;
 
     public void setChannelNotify(ChannelNotify channelNotify) {
         this.channelNotify = channelNotify;
+    }
+
+    public interface ChannelMessageNotify {
+        void onChannelMessageArrive(MessageStruct messageStruct);
+    }
+
+    ChannelMessageNotify channelMessageNotify;
+
+    public void setChannelMessageNotify(ChannelMessageNotify channelMessageNotify) {
+        this.channelMessageNotify = channelMessageNotify;
     }
 
 
@@ -263,17 +363,26 @@ public class MessageService extends Service {
         this.messageResult = result;
     }
 
-
-    public interface ChannelResult {
+    public interface ChannelPubResult {
         void onPublishResponse(boolean status);
+    }
+
+    ChannelPubResult channelPubResult;
+
+    public void setChannelPubResult(ChannelPubResult channelPubResult) {
+        this.channelPubResult = channelPubResult;
+    }
+
+
+    public interface ChannelSubResult {
 
         void onSubscribeResponse(boolean status);
     }
 
-    ChannelResult channelResult;
+    ChannelSubResult channelSubResult;
 
-    public void setChannelResult(ChannelResult channelResult) {
-        this.channelResult = channelResult;
+    public void setChannelSubResult(ChannelSubResult channelSubResult) {
+        this.channelSubResult = channelSubResult;
     }
 
     public List<MessageStruct> getDialogs() {
@@ -288,6 +397,9 @@ public class MessageService extends Service {
                 if (dialogMessageList.get(i).idSequence > min) {
                     min = dialogMessageList.get(i).idSequence;
                 }
+            }
+            if (j > 0) {
+                j = j - 1;
             }
             MessageStruct last = dialogMessageList.get(j).messageStructs.get(dialogMessageList.get(j).messageStructs.size() - 1);
             MessageStruct copy = new MessageStruct(last);
@@ -318,6 +430,65 @@ public class MessageService extends Service {
 
         return messageStructs;
 
+    }
+
+    public List<MessageStruct> getChannelList() {
+        List<MessageStruct> channelList = new ArrayList<>();
+
+        for (Channel c : channelMessageList) {
+            MessageStruct m = new MessageStruct(c.getTitle(), c.getContent(), 0);
+            m.setSpecialId(c.getId());
+            m.setSubTitle(c.getSubTitle());
+            channelList.add(m);
+        }
+
+        return channelList;
+
+    }
+
+    public List<MessageStruct> getChannelMessages(int id) {
+        List<MessageStruct> messageStructs = new ArrayList<>();
+
+        for (int i = 0; i < channelMessageList.size(); i++) {
+            if (channelMessageList.get(i).getId() == id) {
+                messageStructs.addAll(channelMessageList.get(i).getChannelMessage());
+                break;
+            }
+        }
+
+        return messageStructs;
+
+    }
+
+    public void addNewChannelMessage(MessageStruct m) {
+        for (Channel c : channelMessageList) {
+            if (c.getId() == m.getSpecialId()) {
+                c.getChannelMessage().add(new MessageStruct(m));
+                break;
+            }
+        }
+    }
+
+    public void addNewChannel(Channel m) {
+        channelMessageList.add(m);
+    }
+
+    public void addNewDialog(DialogMessage dialogMessage) {
+        this.dialogMessageList.add(dialogMessage);
+    }
+
+    public void LogOut() {
+
+        clientController.logOut(user.getUserName());
+
+
+        //clientController.close();
+    }
+
+    public void closeController() {
+        if (clientController != null) {
+            clientController.close();
+        }
     }
 
 }

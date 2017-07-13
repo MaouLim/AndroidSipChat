@@ -47,6 +47,10 @@ public abstract class SipAgent implements SipListener {
         this.sipProvider.addSipListener(this);
     }
 
+    public void close() {
+        sipStack.stop();
+    }
+
     public SipProvider getSipProvider() {
         return sipProvider;
     }

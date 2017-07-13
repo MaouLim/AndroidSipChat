@@ -9,7 +9,9 @@ import android.javax.sip.ResponseEvent;
 import android.javax.sip.ServerTransaction;
 import android.javax.sip.TimeoutEvent;
 import android.javax.sip.TransactionTerminatedEvent;
+import android.javax.sip.header.EventHeader;
 import android.javax.sip.header.FromHeader;
+import android.javax.sip.header.ToHeader;
 import android.javax.sip.message.Request;
 import android.javax.sip.message.Response;
 import android.util.Log;
@@ -18,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import bupt.androidsipchat.sip.networks.sip.SipAOR;
 import bupt.androidsipchat.sip.networks.sip.SipContactAOR;
+import bupt.androidsipchat.sip.networks.sip.SipFactoryHelper;
 import bupt.androidsipchat.sip.networks.sip.SipProcessor;
 import bupt.androidsipchat.sip.networks.sip.SipRequestBuilder;
 import bupt.androidsipchat.sip.networks.sip.SipResponseBuilder;
@@ -36,6 +39,10 @@ public class ClientController implements SipProcessor, ChatClientService {
     private SipRequestBuilder requestBuilder = null;
     private SipResponseBuilder responseBuilder = null;
     private SipContactAOR serverAOR = null;
+
+    ClientTransaction transaction;
+
+    boolean isInit = false;
 
     public String domain = "dd.dev.com";
 
@@ -62,9 +69,9 @@ public class ClientController implements SipProcessor, ChatClientService {
 
 
     public interface RequestGet {
-        void onMessageRequestGet(String from, String messages);
+        void onMessageRequestGet(String from, String messages, String to);
 
-        void onNotifyRequestGet(String from, String title, String content);
+        void onNotifyRequestGet(String from, String title, String content, String channelName);
 
         void onByeRequestGet(String from);
 
@@ -88,6 +95,7 @@ public class ClientController implements SipProcessor, ChatClientService {
                 public void processRequest(RequestEvent requestEvent) {
                     String method = requestEvent.getRequest().getMethod();
 
+                    Log.e("ProcessRequest", method);
                     switch (method) {
                         case Request.MESSAGE: {
                             ClientController.this.processMessage(requestEvent);
@@ -190,7 +198,13 @@ public class ClientController implements SipProcessor, ChatClientService {
 
 
 
+
             Request request = requestEvent.getRequest();
+            ToHeader toHeader = (ToHeader) request.getHeader(ToHeader.NAME);
+            String add = toHeader.getAddress().getURI().toString();
+            SipAOR t = new SipAOR(add);
+            add = t.getUserName();
+
 
             FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
 
@@ -201,7 +215,7 @@ public class ClientController implements SipProcessor, ChatClientService {
             String content = new String(request.getRawContent());
             Log.e("ProcessMessage", name + ":" + content);
 
-            requestListener.onMessageRequestGet(name, content);
+            requestListener.onMessageRequestGet(name, content, add);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -220,21 +234,43 @@ public class ClientController implements SipProcessor, ChatClientService {
 
     @Override
     public void processNotifier(RequestEvent requestEvent) {
+        Log.e("Controller", "Notify");
         ServerTransaction transaction = requestEvent.getServerTransaction();
+
+        if (transaction == null) {
+            try {
+                transaction = userAgent.getSipProvider().getNewServerTransaction(requestEvent.getRequest());
+            } catch (Exception e) {
+                Log.e("Transaction", " ", e);
+            }
+        }
         try {
             transaction.sendResponse(responseBuilder.create(transaction.getRequest(), Response.OK));
 
             Request request = requestEvent.getRequest();
             FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
-            String from = fromHeader.getName();
-            String content = (String) request.getContent();
 
-            String[] messages = content.split("/");
-            content = content.substring(messages[0].length() + 1);
-            requestListener.onNotifyRequestGet(from, messages[0], content);
+            SipAOR temp = new SipAOR(fromHeader.getAddress().toString());
+            String name = temp.getUserName();
+
+
+            byte[] cb = request.getRawContent();
+            if (cb != null) {
+                String content = new String(cb);
+                Log.e("Notify", content);
+
+                EventHeader eventHeader = (EventHeader) request.getHeader(EventHeader.NAME);
+                String channelName = eventHeader.getEventType();
+
+
+                String[] messages = content.split("/");
+                content = content.substring(messages[0].length() + 1);
+                Log.e("ChannelName", channelName);
+                requestListener.onNotifyRequestGet(name, messages[0], content, channelName);
+            }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Log.e("ProcessNotify", " ", ex);
         }
     }
 
@@ -244,7 +280,9 @@ public class ClientController implements SipProcessor, ChatClientService {
 
     @Override
     public void processResponse(ResponseEvent responseEvent) {
+
         ClientTransaction clientTransaction = responseEvent.getClientTransaction();
+
         Response response = responseEvent.getResponse();
 
         ClientTransaction sendTransaction = clientTransactionMap.get(SipResponseBuilder.getResponseCSeq(response));
@@ -276,6 +314,7 @@ public class ClientController implements SipProcessor, ChatClientService {
                 if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
                     status = true;
                 }
+                responseListener.onPublishResponseGet(status);
 
                 break;
             }
@@ -284,6 +323,7 @@ public class ClientController implements SipProcessor, ChatClientService {
                 if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
                     status = true;
                 }
+
                 responseListener.onSubscribeResponseGet(status);
                 break;
             }
@@ -324,6 +364,7 @@ public class ClientController implements SipProcessor, ChatClientService {
         try {
             serverAOR.attachTo(new SipAOR(userName, domain));
             Request request = requestBuilder.createRegister(serverAOR, 3600);
+            request.setContent(password, SipFactoryHelper.getInstance().getHeaderFactory().createContentTypeHeader("text", "plain"));
             ClientTransaction transaction = userAgent.sendRequestByTransaction(request);
 
             clientTransactionMap.put(SipRequestBuilder.getRequestCSeq(request), transaction);
@@ -362,8 +403,10 @@ public class ClientController implements SipProcessor, ChatClientService {
     public void createChannel(String channelId) {
         try {
             Request request = requestBuilder.createSubscribe(serverAOR, channelId);
-            ClientTransaction transaction = userAgent.sendRequestByTransaction(request);
+            transaction = userAgent.getSipProvider().getNewClientTransaction(request);
             clientTransactionMap.put(SipRequestBuilder.getRequestCSeq(request), transaction);
+            transaction.sendRequest();
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -384,6 +427,23 @@ public class ClientController implements SipProcessor, ChatClientService {
             clientTransactionMap.put(SipRequestBuilder.getRequestCSeq(request), transaction);
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public void logOut(String userName) {
+        try {
+            serverAOR.attachTo(new SipAOR(userName, domain));
+            Request request = requestBuilder.createRegister(serverAOR, 0);
+            ClientTransaction transaction = userAgent.sendRequestByTransaction(request);
+
+        } catch (Exception e) {
+            Log.e("Login", "Exception", e);
+        }
+    }
+
+    public void close() {
+        if (isInit) {
+            userAgent.close();
         }
     }
 }

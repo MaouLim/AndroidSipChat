@@ -50,6 +50,7 @@ public abstract class SipUserAgent extends SipAgent {
         return new SipResponseBuilder(this);
     }
 
+
     public SipAOR getSipAOR() {
         return contactAOR.getSipAOR();
     }

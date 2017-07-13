@@ -44,10 +44,11 @@ public class MessageFragment extends Fragment {
 
             messages.clear();
             messages.addAll(messageService.getDialogs());
+            mrlva.updateItems(messages);
 
             messageService.setMessageNotify(new MessageService.MessageNotify() {
                 @Override
-                public void onNewMessageArrive(final MessageStruct message) {
+                public void onNewMessageArrive(final MessageStruct message, boolean isFind) {
                     newMessageCome(message);
                     if (mrlva != null) {
                         mainMessagesView.post(new Runnable() {
@@ -99,6 +100,13 @@ public class MessageFragment extends Fragment {
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getActivity().unbindService(serviceConnection);
+
+    }
+
 
     private void initRecycleView(View parentView) {
         mainMessagesView = (RecyclerView) parentView.findViewById(R.id.main_recycleview_message);
@@ -110,9 +118,13 @@ public class MessageFragment extends Fragment {
             @Override
             public void onItemClick(int position) {
                 Log.i("Item", position + "");
+                String title = messages.get(position).getTitle();
+                if (messages.get(position).isChatRoomMessage) {
+                    title = "server";
+                }
                 Intent intent = new Intent(getActivity(), ChatActivity.class);
                 intent.putExtra("sequenceId", messages.get(position).getMessageId());
-                intent.putExtra("from", messages.get(position).getTitle());
+                intent.putExtra("from", title);
                 intent.putExtra("dialogId", messages.get(position).getSpecialId());
 
                 startActivity(intent);
@@ -147,7 +159,7 @@ public class MessageFragment extends Fragment {
     public void newMessageCome(MessageStruct ms) {
         int i = 0;
         for (; i < messages.size(); i++) {
-            if (messages.get(i).getMessageId() == ms.getMessageId()) {
+            if (messages.get(i).getSpecialId() == ms.getSpecialId()) {
                 messages.remove(i);
                 break;
             }

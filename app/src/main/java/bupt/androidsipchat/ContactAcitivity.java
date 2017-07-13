@@ -1,7 +1,11 @@
 package bupt.androidsipchat;
 
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bupt.androidsipchat.adapter.ContactRecycleViewAdapter;
+import bupt.androidsipchat.datestruct.DialogMessage;
 import bupt.androidsipchat.datestruct.MessageStruct;
+import bupt.androidsipchat.service.MessageService;
 
 /**
  * Created by sheju on 2017/7/12.
@@ -27,12 +33,34 @@ public class ContactAcitivity extends AppCompatActivity {
 
     int dialogid = 200;
 
+    MessageService messageService;
+    ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MessageService.DataBinder dataBinder = (MessageService.DataBinder) service;
+            messageService = dataBinder.getService();
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
     RecyclerView recyclerView;
     ContactRecycleViewAdapter contactRecycleViewAdapter;
 
     String contactName;
 
     List<MessageStruct> messageStructs = new ArrayList<>();
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,7 +73,15 @@ public class ContactAcitivity extends AppCompatActivity {
 
         setItemClick();
 
+        bindService(new Intent(ContactAcitivity.this, MessageService.class), serviceConnection, Service.BIND_AUTO_CREATE);
 
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(serviceConnection);
     }
 
     public void initRecycleView() {
@@ -112,7 +148,14 @@ public class ContactAcitivity extends AppCompatActivity {
                 intent.putExtra("sequenceId", 0);
                 intent.putExtra("from", messageStructs.get(position).getTitle());
                 intent.putExtra("dialogId", dialogid);
+                DialogMessage dialogMessage = new DialogMessage(messageService.user.getUserName(), messageStructs.get(position).getTitle());
+                dialogMessage.id = dialogid;
+                dialogMessage.idSequence = -1;
+                messageService.addNewDialog(dialogMessage);
+
+
                 dialogid--;
+
 
                 startActivity(intent);
             }

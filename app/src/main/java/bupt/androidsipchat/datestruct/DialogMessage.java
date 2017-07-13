@@ -12,6 +12,8 @@ public class DialogMessage {
     public String toName;
     public int idSequence = 0;
     public static int nums = 0;
+
+    public boolean isChatRoom = false;
     public int id = 0;
 
     public List<MessageStruct> messageStructs = new ArrayList<>();

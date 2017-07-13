@@ -53,16 +53,18 @@ public class ChatActivity extends AppCompatActivity {
 
             messageService.setChatNotify(new MessageService.ChatNotify() {
                 @Override
-                public void onNewMessageArrive(MessageStruct message) {
+                public void onNewMessageArrive(MessageStruct message, boolean isFind) {
                     final MessageStruct m = message;
-                    m.setViewType(ChatRecycleViewAdapter.OTHERTYPE);
-                    newMessageCome(m);
-                    chartsView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            crlva.newMessageCome(m);
-                        }
-                    });
+                    if (m.getSpecialId() == currentMessageId) {
+                        m.setViewType(ChatRecycleViewAdapter.OTHERTYPE);
+                        newMessageCome(m);
+                        chartsView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                crlva.newMessageCome(m);
+                            }
+                        });
+                    }
 
                 }
             });
@@ -152,15 +154,17 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String text = tiet.getText().toString();
-                final int currentChatId = currentMessageId;
+                if (!text.equals("")) {
+                    final int currentChatId = currentMessageId;
 
 
-                currentMessage = new MessageStruct(messageService.user.getUserName(), text, 0);
-                currentMessage.setViewType(ChatRecycleViewAdapter.SELFTYPE);
-                tiet.setText("");
-                crlva.newMessageCome(currentMessage);
-                messages.add(currentMessage);
-                messageService.sendMessage(to, text, currentChatId);
+                    currentMessage = new MessageStruct(messageService.user.getUserName(), text, 0);
+                    currentMessage.setViewType(ChatRecycleViewAdapter.SELFTYPE);
+                    tiet.setText("");
+                    crlva.newMessageCome(currentMessage);
+                    messages.add(currentMessage);
+                    messageService.sendMessage(to, text, currentChatId);
+                }
             }
         });
     }

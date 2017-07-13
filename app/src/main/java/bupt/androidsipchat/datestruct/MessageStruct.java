@@ -17,6 +17,7 @@ public class MessageStruct {
 
     private int specialId;
 
+    public boolean isChatRoomMessage = false;
 
     public MessageStruct(int messageImage, String title, String content, int messageId) {
         this.messageImage = R.drawable.lamu;

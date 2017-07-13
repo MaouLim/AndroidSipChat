@@ -45,4 +45,5 @@ dependencies {
     compile files('libs/junit-3.8.1.jar')
     compile files('libs/log4j-1.2.17.jar')
     compile 'com.afollestad.material-dialogs:core:0.9.4.5'
+    compile 'cn.pedant.sweetalert:library:1.3'
 }

@@ -29,6 +29,7 @@ public class UserInformation {
 
     String userName;
     String domain = "dd.dev.com";
+    public String password = "";
 
     public UserInformation(String userName) {
         this.userName = userName;
