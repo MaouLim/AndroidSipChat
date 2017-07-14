@@ -86,7 +86,7 @@ public class MessageService extends Service {
         user = new UserInformation(userName);
 
         ClientSipConfigurationHelper clientSipConfigurationHelper = new ClientSipConfigurationHelper(this);
-        SipContactAOR serverAOR = new SipContactAOR("server", "10.209.13.116", 5060);
+        SipContactAOR serverAOR = new SipContactAOR("server", "10.128.243.155", 5060);
 
         try {
             clientController = new ClientController(clientSipConfigurationHelper.createConfiguration(),
